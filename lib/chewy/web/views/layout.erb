@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Chewy Web Management</title>
+    <link rel="stylesheet" href="<%= url('/app.css') %>" type="text/css" />
+    <link rel="stylesheet" href="<%= url('/spectre-icons.min.css') %>" type="text/css" />
+    <link rel="stylesheet" href="<%= url('/spectre.min.css') %>" type="text/css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="sidebar bg-gray float-left relative">
+        <div class="logo">
+          <i class="icon icon-search icon-4x"></i>
+        </div>
+        <ul class="nav">
+          <%= erb :_nav %>
+        </ul>
+      </div>
+      <div class="content">
+        <%= yield %>
+      </div>
+    </div>
+  </body>
+</html>

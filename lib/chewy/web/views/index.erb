@@ -1,0 +1,81 @@
+<h2>Reindex</h2>
+<p>You can start a reindex through the form below by clicking 'reset'. Reindexes are done in the background and don't affect searches.
+After a new index is built, the <a href="http://www.elasticsearch.org/guide/reference/api/admin-indices-aliases/">alias</a> is flipped over
+to the new index. A sync is a lighter option which spawns a search index scrubber job; it should be done after a reset in case any index updates occurred during the reset.</p>
+<p>If the structure of an index specification has changed, a reset is required to build a new index with the new structure.</p>
+
+
+<% @index_classes.each do |index| %>
+  <div class="divider"></div>
+  <a name="<%= index.name %>"></a>
+  <h2><%= index.name %></h2>
+
+  <div class="m-2">
+    <div class="m-2">
+      <table class="table table-striped">
+        <thead><tr><th>Specification</th><th>Reindex Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          <tr>
+            <%= status_td(alert: @status.spec_changed?(index), red: 'changed', green: 'unchanged') %>
+            <%= status_td(alert: @status.locked?(index), red: @status.locked?(index), green: 'idle') %>
+            <td>
+              <% if @status.locked?(index) %>
+                <%= button_to "Unlock Index (!)", url("#{index.name}/unlock"), class: 'btn btn-danger', method: 'put', data: {confirm: "ARE YOU SURE you know what you're doing? ONLY do this if you're sure no indexing jobs are running!"} %>
+              <% else %>
+                <div style="display: flex;">
+                <%= button_to "Reset", url("#{index.name}/reset"), method: 'put', class: 'btn', data: {confirm: "Are you sure you want to reset?"} %>
+                <%= button_to "Sync", url("#{index.name}/sync"), method: 'put', class: 'btn', data: {confirm: "Are you sure you want to sync?"} %>
+                <%= button_to "Parallel Reset", url("#{index.name}/reset?parallel=true"), method: 'put', class: 'btn', data: {confirm: "Are you sure you want to reset?"} %>
+                <%= button_to "Parallel Sync", url("#{index.name}/sync?parallel=true"), method: 'put', class: 'btn', data: {confirm: "Are you sure you want to sync?"} %>
+                </div>
+              <% end %>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="m-2">
+      <h4>Backing Indices</h4>
+      <%# TODO fix race condition where temp index has been deleted mid-page-render %>
+      <table class="table table-striped">
+        <% @status.indices(index).each do |actual,active| %>
+          <tr>
+            <td><%= actual %></td>
+            <td><%= status_text(alert: !active, green: 'Active', red: 'Inactive') %></td>
+            <td><%= number_with_delimiter(@status.document_count(actual)) + ' documents' %></td>
+            <td><%= @status.size(actual) %></td>
+            <td><%= button_to 'Delete', url("#{actual}"), disabled: active || @status.locked?(index), class: "btn#{active ? ' btn-danger' : ''}", method: 'delete', data: {confirm: "Are you sure you want to delete this index?"} %></td>
+          </tr>
+        <% end %>
+      </table>
+    </div>
+
+
+    <div class="accordion">
+      <input type="checkbox" id="history-<%= index.name.underscore %>" name="accordion-checkbox" hidden>
+      <label class="accordion-header c-hand h4" for="history-<%= index.name.underscore %>">
+        <i class="icon icon-arrow-right mr-1"></i>
+        Last Operations
+      </label>
+      <div class="accordion-body">
+        <table class="table table-striped">
+          <thead><tr><th>JID</th><th>Start Time</th><th>Duration</th><th>Action</th><th>Status</th></tr></thead>
+          <tbody>
+            <% @status.history(index).each do |hist| %>
+              <tr>
+                <td><%= hist['jid'] %></td>
+                <td><%= Time.at(hist['start_time']) rescue nil %></td>
+                <td><%= duration(Time.at(hist['end_time']) - Time.at(hist['start_time'])) rescue nil %></td>
+                <td><%= hist['action'] %></td>
+                <td><%= format_status(hist['result']) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+<% end %>
+

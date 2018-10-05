@@ -1,0 +1,10 @@
+<div class="health-banner">
+  <span>Health:&nbsp;</span>
+  <%= cluster_health_label(@health) %>
+</div>
+<div class="divider"></div>
+<% @index_classes.each do |index| %>
+  <li class="nav-item">
+    <a href="<%= url("##{index.name}") %>"><%= index.name %></a>
+  </li>
+<% end %>

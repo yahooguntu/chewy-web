@@ -1,0 +1,22 @@
+<% if @notice %>
+  <div class="label label-primary">
+    <%= @notice %>
+  </div>
+<% end %>
+<% if @success %>
+  <div class="label label-success">
+    <%= @success %>
+  </div>
+<% end %>
+<% if @warn %>
+  <div class="label label-warning">
+    <%= @warn %>
+  </div>
+<% end %>
+<% if @error %>
+  <div class="label label-error">
+    <%= @error %>
+  </div>
+<% end %>
+<div class="divider"></div>
+<%= button_to 'Back', url('/'), class: 'btn' %>
